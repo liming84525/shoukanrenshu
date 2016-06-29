@@ -79,6 +79,10 @@ func handle(ids []string) []Count {
 	}
 	if len(ids) >= 1 && !strings.EqualFold(ids[0],"") {
 		for _, id := range ids {
+			//验证id合法
+			if _, ok := data[id]; !ok {
+				continue
+			}
 			//当前时间的浮点数
 			pt := getCurve(time.Now())
 			//乘以频道id的权重
@@ -116,7 +120,7 @@ func getWeight(id string) float64 {
 }
 
 func readDataFromFile(fileName string) (map[string]Data, error) {
-	file, err := os.OpenFile(fileName, os.O_RDWR, os.ModeType)
+	file, err := os.OpenFile(fileName, os.O_RDONLY, os.ModeType)
 	log.Println("reading ...", fileName)
 	defer file.Close()
 	if err != nil {
