@@ -63,18 +63,32 @@ func main() {
 
 //处理逻辑
 func handle(ids []string) []Count {
-
 	counts := make([]Count, 0)
-	for _, id := range ids {
-		//当前时间的浮点数
-		pt := getCurve(time.Now())
-		//乘以频道id的权重
-		c := int64(pt*getWeight(id))
-		count := Count{
-			Id:id,
-			Count: c,
+	log.Println(ids[0])
+	if len(ids) == 1 && strings.EqualFold(ids[0],"") {
+		for k , _ := range data {
+			//当前时间的浮点数
+			pt := getCurve(time.Now())
+			c := int64(pt*getWeight(k))
+			count := Count{
+				Id: k,
+				Count: c,
+			}
+			counts = append(counts, count)
 		}
-		counts = append(counts, count)
+	}
+	if len(ids) >= 1 && !strings.EqualFold(ids[0],"") {
+		for _, id := range ids {
+			//当前时间的浮点数
+			pt := getCurve(time.Now())
+			//乘以频道id的权重
+			c := int64(pt*getWeight(id))
+			count := Count{
+				Id:id,
+				Count: c,
+			}
+			counts = append(counts, count)
+		}
 	}
 	return counts
 }
