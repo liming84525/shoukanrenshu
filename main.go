@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"encoding/csv"
 	"math/rand"
+	"math"
 	"os"
 
 	"github.com/go-martini/martini"
@@ -23,7 +24,9 @@ type Counts struct {
 type Data struct {
 	Cid string
 	Name string
+	Alias string
 	Type int
+	Weight int
 }
 
 var data []Data
@@ -41,6 +44,7 @@ func main() {
 		ret := req.Form.Get("ids")
 		ids := strings.Split(ret, ",")
 		counts := handle(ids)
+		//writefile()
 		r, err := json.Marshal(counts)
 		if err != nil {
 			log.Println("parse result to json fail")
@@ -79,7 +83,14 @@ func getCurve(now time.Time) float64 {
 	curve := [24]float64{0.2, 0.15, 0.1, 0.02, 0.01, 0.005, 0.2, 0.3, 0.2, 0.2, 0.1, 0.1, 0.3, 0.3, 0.2, 0.2, 0.3, 0.35, 0.4, 0.7, 0.754, 0.8, 0.6, 0.5}
 	hour := now.Hour()
 	minute := now.Minute()
-	interval := curve[hour]+(curve[hour]-curve[hour+1])*float64(minute)/60.0
+	interval := 0.0
+	if curve[hour] < curve[hour+1] {
+		interval = curve[hour] + math.Abs(curve[hour+1]-curve[hour]) * float64(minute) / 60.0
+	} else if curve[hour] > curve[hour+1] {
+		interval = curve[hour] - math.Abs(curve[hour+1]-curve[hour]) * float64(minute) / 60.0
+	} else if curve[hour] == curve[hour+1] {
+		interval = curve[hour]
+	}
 	log.Println(interval)
 	return interval
 }
@@ -87,31 +98,35 @@ func getCurve(now time.Time) float64 {
 //获得id的权重
 func getWeight(id string) float64 {
 	tp := 0
+	weight := 0
 	for _, item := range data {
 		if item.Cid == id {
 			tp = item.Type
+			weight = item.Weight
 			break
 		}
 	}
-	weight := 99
-	switch tp {
-	case 1:
-		weight *= 100 /(rand.Intn(99)+1)
-	case 2:
-		weight *= 32 /(rand.Intn(99)+1)
-	case 3:
-		weight *= 15 /(rand.Intn(99)+1)
-	case 4:
-		weight *= 5 /(rand.Intn(99)+1)
-	default:
-		weight *= rand.Intn(5)
+	if weight == 0 {
+		weight = 99
+		switch tp {
+		case 1:
+			weight *= 100
+		case 2:
+			weight *= 32
+		case 3:
+			weight *= 15
+		case 4:
+			weight *= 5
+		default:
+			weight *= rand.Intn(5)
+		}
 	}
 	log.Println(weight)
 	return float64(weight);
 }
 
 func openfile() []Data {
-	file, err := os.OpenFile("./std-channel-utf8.csv", os.O_RDWR, os.ModeType)
+	file, err := os.OpenFile("./std-channel-weight.csv", os.O_RDWR, os.ModeType)
 	defer file.Close()
 	if err != nil {
 		log.Println("open file fail")
@@ -132,16 +147,38 @@ func openfile() []Data {
 			if idx == 0 {
 				item.Cid = row
 			}
+			if idx == 1 {
+				item.Alias = row
+			}
 			if idx == 2 {
 				item.Name = row
 			}
 			if idx == 3 {
 				item.Type, _ = strconv.Atoi(row)
 			}
+			if idx == 4 {
+				item.Weight, _ = strconv.Atoi(row)
+			}
 		}
 		data = append(data, item)
 	}
 	return data
+}
+
+func writefile() {
+	file, err := os.Create("std-channel-weight.csv")
+	defer file.Close()
+	if err != nil {
+		log.Println("open file fail")
+	}
+	defer file.Close()
+	writer := csv.NewWriter(file)
+	for _, item := range data {
+		d := make([]string, 0)
+		d = append(d, item.Cid, item.Alias, item.Name,strconv.Itoa(item.Type), strconv.Itoa(item.Weight) )
+		writer.Write(d)
+	}
+
 }
 
 
