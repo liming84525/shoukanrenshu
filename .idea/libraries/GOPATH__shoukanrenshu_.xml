@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="GOPATH &lt;shoukanrenshu&gt;">
+    <CLASSES>
+      <root url="file://$USER_HOME$/gocode/wxts/src/pb" />
+      <root url="file://$USER_HOME$/gocode/wxts/src/util" />
+      <root url="file://$USER_HOME$/gocode/src/gopkg.in" />
+      <root url="file://$USER_HOME$/gocode/src/github.com" />
+      <root url="file://$USER_HOME$/gocode/src/golang.org" />
+      <root url="file://$USER_HOME$/gocode/src/9fans.net" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+    <excluded>
+      <root url="file://$PROJECT_DIR$" />
+    </excluded>
+  </library>
+</component>
