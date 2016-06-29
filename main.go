@@ -79,6 +79,8 @@ func handle(ids []string) []Count {
 	}
 	if len(ids) >= 1 && !strings.EqualFold(ids[0],"") {
 		for _, id := range ids {
+			//大小写转换
+			id = strings.ToUpper(id)
 			//验证id合法
 			if _, ok := data[id]; !ok {
 				continue
@@ -126,7 +128,7 @@ func readDataFromFile(fileName string) (map[string]Data, error) {
 	if err != nil {
 		log.Println("open file fail")
 		data, _ = readDataFromFile("./std-channel-utf8.csv")
-		writefile(*flag_outputFile)
+		writeFile(*flag_outputFile)
 		log.Panic("due to read file fail, create new file, try again")
 	}
 	reader := csv.NewReader(file)
@@ -163,7 +165,7 @@ func readDataFromFile(fileName string) (map[string]Data, error) {
 	return data, nil
 }
 
-func writefile(output string) {
+func writeFile(output string) {
 	file, err := os.Create(output)
 	defer file.Close()
 	if err != nil {
